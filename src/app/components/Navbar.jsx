@@ -8,8 +8,8 @@ const Navbar = () => {
         <Link href='/' className='text-[2rem] text-yellow-400 font-semibold'>Meals Inn</Link>
         <div className='flex justify-center items-center'>
             <div className='flex justify-center items-center gap-6'>
-                <Link href='/' className='mx-2'>Meals</Link>
-                <Link href='/' className='mx-2'>Saved Meals</Link>
+                <Link href='/meals' className='mx-2'>Meals</Link>
+                <Link href='/savedMeals' className='mx-2'>Saved Meals</Link>
             </div>
         </div>
         </div>

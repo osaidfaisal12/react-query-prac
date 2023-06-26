@@ -9,6 +9,7 @@ const Categories = (
         categoryIsLoading,
         categoryIsError,
         categoryError,
+        setQuery
     }
 ) => {
 
@@ -23,7 +24,7 @@ const Categories = (
                 <CategoryItem 
                 key={item.idCategory}
                 category={item}
-                onClickHandler={() => setSelectedCategory(item.strCategory)}
+                onClickHandler={() => {setSelectedCategory(item.strCategory); setQuery('')}}
                 selectedCategory={selectedCategory}
                 />
             ))

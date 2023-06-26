@@ -7,6 +7,7 @@ import SearchBar from "../components/SearchBar";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Categories from "../components/Categories";
+import SingleMeal from "../components/SingleMeal";
 
 const getCategories = async () => {
   const { data } = await axios.get(
@@ -15,19 +16,29 @@ const getCategories = async () => {
   return data.categories;
 };
 
-const getMeals = async ({queryKey}) => {
+const getMeals = async ({ queryKey }) => {
   const { data } = await axios.get(
-    `https://www.themealdb.com/api/json/v1/1/filter.php?i=${queryKey[1]}`
+    `https://www.themealdb.com/api/json/v1/1/filter.php?c=${queryKey[1]}`
   );
-  console.log(data)
   return data?.meals || [];
-}
+};
 
-const page = () => {
+const getQuriedMeals = async ({ queryKey }) => {
+  const { data } = await axios.get(
+    `https://www.themealdb.com/api/json/v1/1/search.php?s=${queryKey[1]}`
+  );
+
+  return data?.meals || [];
+};
+
+const Page = () => {
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [query, setQuery] = useState("");
 
-  console.log(selectedCategory)
+  console.log(query)
+  console.log(selectedCategory) 
+  console.log(searchText)
 
   const {
     data: categories,
@@ -37,10 +48,39 @@ const page = () => {
   } = useQuery(["categories"], getCategories);
 
   const {
-    data: meals,
+    data: queriedData,
+    isLoading: queriedDataIsLoading,
+    isError: queriedDataIsError,
+  } = useQuery(["mealsByQuery", query], getQuriedMeals,{
+    enabled: query !== "",
+  });
+
+  const {
+    data,
     isLoading,
     isError,
-  } = useQuery(["mealsByCategory", selectedCategory], getMeals)
+  } = useQuery(["mealsByCategory", selectedCategory], getMeals, 
+  { enabled: query === "" }
+  );
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (searchText) {
+        setQuery(searchText);
+        setSelectedCategory("");
+      } else {
+        setQuery("");
+        if (categories) {
+          setSelectedCategory(categories[0].strCategory);
+        }
+      }
+    }, 300);
+
+    return () => {
+      setQuery("");
+      clearTimeout(timeout);
+    };
+  }, [searchText, categories]);
 
   useEffect(() => {
     if (categories) {
@@ -60,16 +100,26 @@ const page = () => {
           categoryIsError={categoryIsError}
           categoryError={categoryError}
           categories={categories}
+          setQuery={setQuery}
         />
-       {/* {
-        !isLoading && !isError && meals && meals.map((meal) => (
-          <p>{meal.strMeal}</p>
-        ))
-       } */}
+        <div className="flex flex-wrap gap-6 items-center">
+          {!isLoading &&
+            !isError &&
+            data &&
+            data.map((meal) => <SingleMeal key={meal.idMeal} meal={meal} />)}
+          
+          {!queriedDataIsLoading &&
+            !queriedDataIsError &&
+            queriedData &&
+            queriedData.map((meal) => (
+              <SingleMeal key={meal.idMeal} meal={meal} />
+            ))}
+            
+        </div>
       </div>
       <Footer />
     </div>
   );
 };
 
-export default page;
+export default Page;
